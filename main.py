@@ -1,161 +1,146 @@
 #Python
 from typing import Optional
+from fastapi.params import Path
 from enum import Enum
-import re
-from datetime import date
-from typing import Dict
-from typing import Any
 
 #Pydantic
 from pydantic import BaseModel
 from pydantic import Field
-from pydantic import EmailStr
-from pydantic import PaymentCardNumber
-from pydantic.validators import str_validator
-from pydantic.types import PaymentCardBrand
+from pydantic import EmailStr, HttpUrl, PaymentCardNumber
 
-#FastAPI
+# FastAPI
 from fastapi import FastAPI
 from fastapi import Body, Query, Path
 
 app = FastAPI()
 
-PHONE_REGEXP = re.compile(r'^\+?[0-9]{1,3}?[0-9]{6,14}$')
-
 # Models
 
-class PhoneNumber(str):
-    """Phone number type"""
-
-    @classmethod
-    def __get_validators__(cls) -> Dict[str, Any]:
-        yield str_validator
-        yield cls.validate
-
-    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-        field_schema.update(
-            pattern=r'^\+?[0-9]+$',
-            example=['+541112345678'],
-            format='phone-number',
-        )
-
-    @classmethod
-    def validate(cls, value: str) -> str:
-        if not isinstance(value, str):
-            raise TypeError('Phone number must be a string')
-
-        match = PHONE_REGEXP.search(value)
-
-        if not match:
-            raise ValueError('Phone number must be a valid phone number')
-
-        return value
-
-    def __repr__(self) -> str:
-        return f'PhoneNumber({super().__repr__()})'
-
-    
-class HairColor(str, Enum):
-    white = "white",
-    brown = "brown",
-    black = "black", 
-    blonde = "blonde",
-    red = "red"
-
-class Person(BaseModel):
-    first_name: str = Field(
-        ..., 
-        min_length=1,
-        max_length = 50,
-        )
-    last_name: str = Field(
-        ..., 
-        min_length=1,
-        max_length = 50
-        )
-    age: int = Field(
-        ..., 
-        gt = 0,
-        le = 115
-        )
-    hair_color: Optional[HairColor] = Field(default = None)
-    is_married : Optional[bool] =  Field(default = None)
-
-    class Config:
-        schema_extra = {
-            "example":{
-                "first_name": "Facundo",
-                "last_name" : "García Martoni",
-                "age": 21,
-                "hair_color": "blonde",
-                "is_married": False
-            }
-        }
+class HairColor(Enum):
+    white = 'white'
+    black = 'black'
+    blonde = 'blonde'
+    brown = 'brown'
+    red = 'red'
 
 class Location(BaseModel):
-    city: str
-    state: str
-    country: str
+    city: str = Field(
+        ...,
+        min_length=4,
+        max_length=24,
+        example="Montevideo"
+        )
+    state: str = Field(
+        ...,
+        min_length=4,
+        max_length=24,
+        example="Montevideo"
+        )
+    country: str = Field(
+        ...,
+        min_length=4,
+        max_length=24,
+        example="Uruguay"
+        )
+    latam: bool = Field(example=True)
+    # class Config_loc:
+    #     schema_example={
+    #         "example": {
+    #             "city": "Montevideo",
+    #             "state": "Montevideo",
+    #             "country": "Uruguay",
+    #             "latam": True
+    #         }
+    #     }
 
-@app.get("/") #Fast operation decorator
-def home():
-    
-    return {"Hello": "world"}
+class PersonBase(BaseModel):
+    first_name: str = Field(
+        ...,
+        min_length=3,
+        max_length=35,
+        example="Santiago"
+        )
+    last_name: str = Field(
+        ...,
+        min_length=3,
+        max_length=35,
+        example="Téllez"
+        )
+    age_person: int = Field(
+        ...,
+        ge=18,
+        le=115,
+        example=39
+        )
+    color_hair: Optional[HairColor] = Field(default=None, example=HairColor.black)
+    married: Optional[bool] = Field(default=None, example=True)
+    email_usr : EmailStr = Field(default=None, example="santiago99tellez@hotmail.com")
+    web_usr : HttpUrl = Field(default=None, example="https://www.gmail.com")
 
-#Request an Response body
+class Person(PersonBase): # Person parameters
+    pay_card_usr: PaymentCardNumber = Field(default=None, example="5158459994949763")
+    password: str = Field(..., min_length=8)
 
-@app.post("/person/new") # Enviar datos
-def create_person(person: Person = Body(...)): #El body parameter es obligatorio
+class PersonOut(PersonBase):
+    pass
 
+@app.get("/") #Path operation decorator
+def home(): #Path operation function
+    return {"First API": "Congratulation"} #JSON
+
+# Request and Response Body
+
+@app.post("/person/new", response_model = PersonOut) # Acces a new person
+def create_person(person: Person = Body(...)): # acces to the parameters of person
     return person
 
-# Validaciones: Query Parameters
+# Validations: Query Parameters
+
 @app.get("/person/detail")
-def show_person( #recibo query parameters
+def show_person(
     name: Optional[str] = Query(
         None, 
-        min_length = 1, 
-        max_length = 20,
-        title = "Person Name", 
-        description = "This is the person's mame. It's between 1 and 20 characters"
+        min_length=3, 
+        max_length=35,
+        title="Person Name",
+        description="This is the person name. It's between 3 and 35 characters.",
+        example="Pedro"
         ),
-    age: Optional[int] = Query(
+    age: str = Query(
         ...,
-        title = "Person Age", 
-        description = "This is the person's age. It's rquired"
-        ) #Query parameter obligatorio, no es ideal pero puede pasar
-    ):
+        title="Person Age",
+        description="This is the person age. It's required.",
+        example="34"
+        )
+):
     return {name: age}
 
-# Validaciones: Path parameters
+# Validations: Path Parameters
 @app.get("/person/detail/{person_id}")
-def show_person( #recibo path parameters
+def show_person(
     person_id: int = Path(
         ..., 
-        gt = 0,
-        title = "Person Id", 
-        description = "This is the person's Id. It's rquired and it must be greather than 0"
-        ) # Obligatorio y mayor a 0
-    ):
-    return {person_id: "It exists!"}
+        gt=0,
+        title="Person ID",
+        description="This is the person ID. It's reqiuired and it's more than 0.",
+        example=300
+        )
+):
+    return {person_id: "it_exist!"}
 
-# Validaciones: Request Body
-
+# Validations: Request Body
 @app.put("/person/{person_id}")
 def update_person(
     person_id: int = Path(
-        ..., 
-        gt = 0,
-        title = "Person ID",
-        description= "This is the person ID"
+        ...,
+        title="Person ID",
+        description="This is the person ID",
+        gt=0,
+        example=300
     ),
-        person: Person = Body(...),
-        # location: Location = Body(...)
+    person: Person = Body(...),
+    location: Location = Body(...)
 ):
     results = person.dict()
-    # results.update(location.dict())
-    # return {
-    #     "person": person.dict(),
-    #     "location": location.dict()
-    # }
-    return person
+    results.update(location.dict())
+    return results 
