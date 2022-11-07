@@ -97,9 +97,26 @@ def home(): #Path operation function
     path = "/person/new", 
     response_model = PersonOut,
     status_code= status.HTTP_201_CREATED,
-    tags = ["Persons"]
+    tags = ["Persons"], 
+    summary = "Create Person in the app"
     ) # Acces a new person
 def create_person(person: Person = Body(...)): # acces to the parameters of person
+    """
+    - Titulo
+    - Descripción
+    - Parámetros
+    - Resultado
+
+    Create person
+
+    This path operation creates a person in the app and save the information in the database
+
+    Parameters: 
+    - Request body Parameter:
+        - **person: Person** -> A person model with first name, last name, age, hair color and marital status
+
+    Returns a person model with first name, last name, age, hair color and marital status
+    """
     return person
 
 # Validations: Query Parameters
@@ -125,6 +142,13 @@ def show_person(
         example="34"
         )
     ):
+    """Show person 
+
+    This path operation recibe the person's information and it shows it
+
+    
+
+    """    
     return {name: age}
 
 # Validations: Path Parameters
