@@ -96,7 +96,8 @@ def home(): #Path operation function
 @app.post(
     path = "/person/new", 
     response_model = PersonOut,
-    status_code= status.HTTP_201_CREATED
+    status_code= status.HTTP_201_CREATED,
+    tags = ["Persons"]
     ) # Acces a new person
 def create_person(person: Person = Body(...)): # acces to the parameters of person
     return person
@@ -105,7 +106,8 @@ def create_person(person: Person = Body(...)): # acces to the parameters of pers
 
 @app.get(
     path = "/person/detail",
-    status_code= status.HTTP_200_OK
+    status_code= status.HTTP_200_OK,
+    tags = ["Persons"]
     )
 def show_person(
     name: Optional[str] = Query(
@@ -130,7 +132,8 @@ persons = [1, 2, 3, 4, 5] # IDs existentes para la comprobación
 
 @app.get(
     path = "/person/detail/{person_id}", 
-    status_code = status.HTTP_200_OK
+    status_code = status.HTTP_200_OK,
+    tags = ["Persons"]
     )
 def show_person(
     person_id: int = Path(
@@ -152,7 +155,8 @@ def show_person(
 # Validations: Request Body
 @app.put(
     path = "/person/{person_id}",
-    status_code = status.HTTP_200_OK
+    status_code = status.HTTP_200_OK,
+    tags = ["Persons"]
     )
 def update_person(
     person_id: int = Path(
@@ -163,7 +167,8 @@ def update_person(
         example=300
     ),
     person: Person = Body(...),
-    location: Location = Body(...)
+    location: Location = Body(...),
+    tags = ["Persons"]
 ):
     results = person.dict()
     results.update(location.dict())
@@ -172,7 +177,8 @@ def update_person(
 @app.post(
     path = "/login",
     response_model=LoginOut,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    tags = ["Persons"]
     )
 def login(
     username: str = Form(...), 
@@ -207,7 +213,8 @@ def contact(
     return user_agent
 
 @app.post(
-    path = "/post-image"
+    path = "/post-image",
+    tags = ["Images"]
     )
 def post_image(
     image: UploadFile = File(...)
@@ -219,7 +226,8 @@ def post_image(
     }
 
 @app.post(
-    path='/post-images'
+    path='/post-images',
+    tags = ["Images"]
 )
 def post_images(
     images: List[UploadFile] = File(...)
