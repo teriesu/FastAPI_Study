@@ -8,11 +8,19 @@
     "password": "87654321"
   },
   {
-    "user_id": "7fa85f64-5717-4562-b3fc-2c963f66afa6",
-    "email": "Segundo@example.com",
-    "first_name": "Segundo",
-    "last_name": "example",
+    "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "email": "user@example.com",
+    "first_name": "string",
+    "last_name": "string",
     "birth_date": "2022-11-07",
-    "password": "87654321"
+    "password": "string"
+  },
+  {
+    "user_id": "5fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "email": "use2r@example.com",
+    "first_name": "string",
+    "last_name": "string",
+    "birth_date": "2022-11-07",
+    "password": "string"
   }
 ]

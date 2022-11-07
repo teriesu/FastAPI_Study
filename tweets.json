@@ -1,1 +1,22 @@
-[]
+[
+  {
+    "tweet_id": "5fa75f64-5717-4562-b3fc-2c963f66afa6",
+    "content": "Proove",
+    "created_at": "2022-11-06 22:40:49.298553",
+    "updated_at": "2022-11-07 03:40:51.464000+00:00",
+    "by": {
+      "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "email": "user@example.com"
+    }
+  },
+  {
+    "tweet_id": "3fa85f64-5717-4562-b3fc-2c963f96afa6",
+    "content": "string",
+    "created_at": "2022-11-06 22:43:55.764625",
+    "updated_at": "2022-11-07 03:44:46.523000+00:00",
+    "by": {
+      "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "email": "user@example.com"
+    }
+  }
+]

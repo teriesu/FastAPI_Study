@@ -57,11 +57,11 @@ class Tweet(BaseModel):
     content: str = Field(
         ..., 
         min_length=1, 
-        max_length = 256
+        max_length=256
     )
-    created_at: datetime = Field(default = datetime.now())
-    updated_at: Optional[datetime] = Field(default = None)
-    by: User = Field(...)
+    created_at: datetime = Field(default=datetime.now())
+    updated_at: Optional[datetime] = Field(default=None)
+    by: UserBase = Field(...)
 
 #Path Operations
 
@@ -94,6 +94,11 @@ def signup(user: UserRegister =  Body(...)):
         user_dict = user.dict()
         user_dict["user_id"] = str(user_dict["user_id"])
         user_dict["birth_date"] = str(user_dict["birth_date"])
+        if any(str(users['user_id']) == str(user.user_id) for users in results):
+            raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User ID already exist!"
+        )
         if any(users['email'] == user.email for users in results):
             raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -181,13 +186,42 @@ def update_a_user():
 ## Tweets
 ### Show all tweets
 @app.get(
-    path = "/",  
-    response_model = List[Tweet],
+    path="/",
+    response_model=List[User],
     status_code=status.HTTP_200_OK,
-    summary= "Show all tweets",
-    tags = ["Tweets"])
-def home():
-    return {"Primitive Twitter": "Working"}
+    summary="Show all tweets",
+    tags=["Tweets"]
+)
+def show_all_tweets():
+    '''
+    This path operation shows all users created in the app
+
+    Parameters: 
+    - None
+
+    Returns a list with the basic user information of all users created in the app:
+    - user_id: UUID
+    - email: Emailstr
+    - first_name: str
+    - last_name: str
+    - birth_date: date
+
+    '''
+    with open("users.json", "r", encoding = "utf-8") as f:
+        results = json.loads(f.read())
+        return results
+        
+# @app.get(
+#     path = "/",  
+#     response_model = List[Tweet],
+#     status_code=status.HTTP_200_OK,
+#     summary= "Show all tweets",
+#     tags = ["Tweets"])
+# def home():
+
+#     with open("users.json", "r", encoding = "utf-8") as f:
+#         results = json.loads(f.read())
+#         return results
 
 ### Post a tweet
 @app.post(
@@ -197,8 +231,40 @@ def home():
     summary= "Post a tweet",
     tags = ["Tweets"]
 )
-def post():
-    pass
+def post(tweet: Tweet =  Body(...)):
+    '''
+    Post a Tweet
+
+    This path operation post a Tweet in the app
+    
+    Parameters:
+    - Request Body parameter
+        - tweet: Tweet
+    
+    Returns a JSON with the basic tweet information:
+    - tweet_id: UUID
+    - content: str
+    - created_at: datetime
+    - updated_at: Optional[datetime]
+    - by: User
+    '''
+    with open("tweets.json", "r+", encoding = "utf-8") as f:
+        results = json.load(f)
+        tweet_dict = tweet.dict()
+        tweet_dict["tweet_id"] = str(tweet_dict["tweet_id"])
+        tweet_dict["created_at"] = str(tweet_dict["created_at"])
+        if tweet_dict["updated_at"]:
+            tweet_dict["updated_at"] = str(tweet_dict["updated_at"])
+        tweet_dict["by"]["user_id"] = str(tweet_dict["by"]["user_id"])
+        if any(str(tweets['tweet_id']) == str(tweet.tweet_id) for tweets in results):
+            raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Tweet ID already exist!"
+        )
+        results.append(tweet_dict)
+        f.seek(0) #Regreso al primer byte
+        f.write(json.dumps(results, indent=4))
+        return tweet
 
 ### Show a tweet
 @app.get(
