@@ -1,0 +1,18 @@
+[
+  {
+    "user_id": "7fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "email": "Primer@example.com",
+    "first_name": "Primer",
+    "last_name": "example",
+    "birth_date": "2022-11-07",
+    "password": "87654321"
+  },
+  {
+    "user_id": "7fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "email": "Segundo@example.com",
+    "first_name": "Segundo",
+    "last_name": "example",
+    "birth_date": "2022-11-07",
+    "password": "87654321"
+  }
+]

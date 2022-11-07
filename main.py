@@ -2,6 +2,7 @@ from uuid import UUID
 from datetime import date
 from datetime import datetime
 from typing import Optional, List
+import json
 
 # Pydantic
 from pydantic import BaseModel
@@ -11,6 +12,8 @@ from pydantic import Field
 #FastAPI
 from fastapi import FastAPI
 from fastapi import status
+from fastapi import Body
+from fastapi import HTTPException
 
 
 app = FastAPI()
@@ -41,6 +44,13 @@ class User(UserBase):
     )
     birth_date: Optional[date] = Field(default = None)
 
+class UserRegister(User):
+    password: str = Field(
+        ..., 
+        min_lenght = 8,
+        max_lenght = 64
+    )
+
 ## Tweet
 class Tweet(BaseModel):
     tweet_id: UUID = Field(...)
@@ -64,8 +74,36 @@ class Tweet(BaseModel):
     summary= "Register a new user",
     tags = ["Users"]
 )
-def signup():
-    pass
+def signup(user: UserRegister =  Body(...)):
+    """
+    This path operation register a user in the app
+
+    Parameters:
+    - Request body parameter
+        - user: UserRegister
+    
+    Returns a json with the basic user information:
+    - user_id: uuid
+    - email: Emailstr
+    - first_name: str
+    - last_name: str
+    - birth_date: str
+    """    
+    with open("users.json", "r+", encoding = "utf-8") as f:
+        results = json.load(f)
+        user_dict = user.dict()
+        user_dict["user_id"] = str(user_dict["user_id"])
+        user_dict["birth_date"] = str(user_dict["birth_date"])
+        if any(users['email'] == user.email for users in results):
+            raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Email already exist!"
+        )
+        results.append(user_dict)
+        f.seek(0) #Regreso al primer byte
+        f.write(json.dumps(results, indent=2))
+        return user
+
 
 ### Login a user
 @app.post( # El cliente envía la información del registro
@@ -86,8 +124,25 @@ def Login():
     summary= "Show all users",
     tags = ["Users"]
 )
-def users():
-    pass
+def show_all_users():
+    '''
+    This path operation shows all users created in the app
+
+    Parameters: 
+    - None
+
+    Returns a list with the basic user information of all users created in the app:
+    - user_id: UUID
+    - email: Emailstr
+    - first_name: str
+    - last_name: str
+    - birth_date: date
+
+    '''
+    with open("users.json", "r", encoding = "utf-8") as f:
+        results = json.loads(f.read())
+        return results
+
 
 ### Show a user
 @app.get( # El cliente envía la información del registro
