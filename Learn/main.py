@@ -96,16 +96,36 @@ def home(): #Path operation function
 @app.post(
     path = "/person/new", 
     response_model = PersonOut,
-    status_code= status.HTTP_201_CREATED
+    status_code= status.HTTP_201_CREATED,
+    tags = ["Persons"], 
+    summary = "Create Person in the app"
     ) # Acces a new person
 def create_person(person: Person = Body(...)): # acces to the parameters of person
+    """
+    - Titulo
+    - Descripción
+    - Parámetros
+    - Resultado
+
+    Create person
+
+    This path operation creates a person in the app and save the information in the database
+
+    Parameters: 
+    - Request body Parameter:
+        - **person: Person** -> A person model with first name, last name, age, hair color and marital status
+
+    Returns a person model with first name, last name, age, hair color and marital status
+    """
     return person
 
 # Validations: Query Parameters
 
 @app.get(
     path = "/person/detail",
-    status_code= status.HTTP_200_OK
+    status_code= status.HTTP_200_OK,
+    tags = ["Persons"],
+    deprecated = True
     )
 def show_person(
     name: Optional[str] = Query(
@@ -123,6 +143,11 @@ def show_person(
         example="34"
         )
     ):
+    """
+    Show person 
+
+    This path operation recibe the person's information and it shows it
+    """    
     return {name: age}
 
 # Validations: Path Parameters
@@ -130,7 +155,8 @@ persons = [1, 2, 3, 4, 5] # IDs existentes para la comprobación
 
 @app.get(
     path = "/person/detail/{person_id}", 
-    status_code = status.HTTP_200_OK
+    status_code = status.HTTP_200_OK,
+    tags = ["Persons"]
     )
 def show_person(
     person_id: int = Path(
@@ -152,7 +178,8 @@ def show_person(
 # Validations: Request Body
 @app.put(
     path = "/person/{person_id}",
-    status_code = status.HTTP_200_OK
+    status_code = status.HTTP_200_OK,
+    tags = ["Persons"]
     )
 def update_person(
     person_id: int = Path(
@@ -163,7 +190,8 @@ def update_person(
         example=300
     ),
     person: Person = Body(...),
-    location: Location = Body(...)
+    location: Location = Body(...),
+    tags = ["Persons"]
 ):
     results = person.dict()
     results.update(location.dict())
@@ -172,7 +200,8 @@ def update_person(
 @app.post(
     path = "/login",
     response_model=LoginOut,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    tags = ["Persons"]
     )
 def login(
     username: str = Form(...), 
@@ -207,7 +236,8 @@ def contact(
     return user_agent
 
 @app.post(
-    path = "/post-image"
+    path = "/post-image",
+    tags = ["Images"]
     )
 def post_image(
     image: UploadFile = File(...)
@@ -219,7 +249,8 @@ def post_image(
     }
 
 @app.post(
-    path='/post-images'
+    path='/post-images',
+    tags = ["Images"]
 )
 def post_images(
     images: List[UploadFile] = File(...)
