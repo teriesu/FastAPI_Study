@@ -124,7 +124,8 @@ def create_person(person: Person = Body(...)): # acces to the parameters of pers
 @app.get(
     path = "/person/detail",
     status_code= status.HTTP_200_OK,
-    tags = ["Persons"]
+    tags = ["Persons"],
+    deprecated = True
     )
 def show_person(
     name: Optional[str] = Query(
@@ -142,12 +143,10 @@ def show_person(
         example="34"
         )
     ):
-    """Show person 
+    """
+    Show person 
 
     This path operation recibe the person's information and it shows it
-
-    
-
     """    
     return {name: age}
 
